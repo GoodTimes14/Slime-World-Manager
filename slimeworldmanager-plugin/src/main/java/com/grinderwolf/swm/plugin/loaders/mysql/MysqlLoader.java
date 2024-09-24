@@ -60,6 +60,8 @@ public class MysqlLoader extends UpdatableLoader {
         hikariConfig.setUsername(config.getUsername());
         hikariConfig.setPassword(config.getPassword());
 
+        hikariConfig.setDataSourceClassName("com.grinderwolf.swm.internal.com.mysql.cj.jdbc.MysqlDataSource");
+
         hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
@@ -70,6 +72,8 @@ public class MysqlLoader extends UpdatableLoader {
         hikariConfig.addDataSourceProperty("cacheServerConfiguration", "true");
         hikariConfig.addDataSourceProperty("elideSetAutoCommits", "true");
         hikariConfig.addDataSourceProperty("maintainTimeStats", "false");
+        hikariConfig.addDataSourceProperty("enabledTLSProtocols","TLSv1.2");
+        hikariConfig.addDataSourceProperty("databaseName",config.getDatabase());
 
         source = new HikariDataSource(hikariConfig);
 
