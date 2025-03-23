@@ -55,11 +55,12 @@ public class MysqlLoader extends UpdatableLoader {
     public MysqlLoader(DatasourcesConfig.MysqlConfig config) throws SQLException {
         HikariConfig hikariConfig = new HikariConfig();
 
+        hikariConfig.setDriverClassName("com.grinderwolf.swm.internal.com.mysql.cj.jdbc.Driver");
+
         hikariConfig.setJdbcUrl("jdbc:mysql://" + config.getHost() + ":" + config.getPort() + "/" + config.getDatabase() + "?autoReconnect=true&allowMultiQueries=true");
         hikariConfig.setUsername(config.getUsername());
         hikariConfig.setPassword(config.getPassword());
 
-        hikariConfig.setDriverClassName("com.grinderwolf.swm.internal.com.mysql.cj.jdbc.Driver");
 
         hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
