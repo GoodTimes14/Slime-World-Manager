@@ -27,6 +27,7 @@ import com.grinderwolf.swm.plugin.log.Logging;
 import com.grinderwolf.swm.plugin.update.Updater;
 import com.grinderwolf.swm.plugin.upgrade.WorldUpgrader;
 import com.grinderwolf.swm.plugin.world.WorldUnlocker;
+import com.grinderwolf.swm.plugin.world.async.AsyncWorldGenerator;
 import com.grinderwolf.swm.plugin.world.importer.WorldImporter;
 import lombok.Getter;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -49,7 +50,9 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
     private SlimeNMS nms;
 
     private final List<SlimeWorld> worlds = new ArrayList<>();
-    private final ExecutorService worldGeneratorService = Executors.newFixedThreadPool(1);
+    //private final ExecutorService worldGeneratorService = Executors.newFixedThreadPool(1);
+
+    private AsyncWorldGenerator asyncWorldGenerator;
     private boolean asyncWorldGen;
 
     @Override
@@ -135,6 +138,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             } catch (IllegalArgumentException ignored) { // This exception is thrown as null is not a WorldServer object
                 Logging.warning("You've enabled async world generation. Although it's quite faster, this feature is EXPERIMENTAL. Use at your own risk.");
                 asyncWorldGen = true;
+                asyncWorldGenerator = new AsyncWorldGenerator(this,nms);
             } catch (UnsupportedOperationException ex) {
                 Logging.error("Async world generation does not support this spigot version.");
                 ConfigManager.getMainConfig().setAsyncWorldGenerate(false);
@@ -150,6 +154,12 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         }
 
         worlds.clear();
+    }
+
+
+    @Override
+    public void onDisable() {
+        asyncWorldGenerator.shutdown();
     }
 
     private SlimeNMS getNMSBridge() throws InvalidVersionException {
@@ -325,12 +335,14 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         }
 
         if (asyncWorldGen) {
-            worldGeneratorService.submit(() -> {
 
-                Object nmsWorld = nms.createNMSWorld(world);
-                Bukkit.getScheduler().runTask(this, () -> nms.addWorldToServerList(nmsWorld));
-
-            });
+            asyncWorldGenerator.generateWorld(world);
+//            worldGeneratorService.submit(() -> {
+//
+//                Object nmsWorld = nms.createNMSWorld(world);
+//                Bukkit.getScheduler().runTask(this, () -> nms.addWorldToServerList(nmsWorld));
+//
+//            });
         } else {
             nms.generateWorld(world);
         }
